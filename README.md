@@ -1,12 +1,4 @@
-/*
- Prelim Activity 01: Codac Logistics Delivery & Fuel Auditor
- By: Justin Louise Neypes
- With the help of Gemini
 
- Description: This console app tracks fuel expenses and delivery performance
- for a single vehicle over a 5-day work week. It demonstrates C# concepts
- such as data types, loops, arrays, validation, and console I/O.
-*/
 
 using System;
 
