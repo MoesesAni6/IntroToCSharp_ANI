@@ -1,81 +1,78 @@
 using System;
 
 // Base Class
-abstract class WaterFilter
+class PowerSource
 {
-    private string filterID;
-    private int usageCount;
+    protected string SourceID;
+    protected double BaseOutput;
 
-    public string FilterID
+    public string Id
     {
-        get { return filterID; }
-        set { filterID = value; }
+        get { return SourceID; }
+        set { SourceID = value; }
     }
 
-    public int UsageCount
+    public double Output
     {
-        get { return usageCount; }
+        get { return BaseOutput; }
         set
         {
-            if (value < 0) throw new ArgumentException("Usage count cannot be negative.");
-            usageCount = value;
+            if (value < 0) throw new ArgumentException("Output cannot be negative.");
+            BaseOutput = value;
         }
     }
 
-    public WaterFilter(string id, int usage)
+    public virtual void GenerateReport()
     {
-        FilterID = id;
-        UsageCount = usage;
-    }
-
-    public abstract void ProcessWater();
-
-    public double CalculateEfficiency(double waterProcessed)
-    {
-        try
-        {
-            return waterProcessed / UsageCount; // may throw DivideByZeroException
-        }
-        catch (DivideByZeroException)
-        {
-            Console.WriteLine("Cannot calculate efficiency: no water processed yet.");
-            return 0;
-        }
+        Console.WriteLine("Base PowerSource report.");
     }
 }
 
-// Sub-Class: CarbonFilter
-class CarbonFilter : WaterFilter
+// Sub-Class: SolarPanel
+class SolarPanel : PowerSource
 {
-    public int DebrisRemoved { get; set; }
+    public double SunlightPercent { get; set; }
 
-    public CarbonFilter(string id, int usage, int debris) : base(id, usage)
+    public SolarPanel(string id, double output, double sunlight)
     {
-        DebrisRemoved = debris;
+        SourceID = id;
+        BaseOutput = output;
+        SunlightPercent = sunlight;
     }
 
-    public override void ProcessWater()
+    public override void GenerateReport()
     {
-        Console.WriteLine($"Carbon Filter {FilterID} removed {DebrisRemoved} units of debris.");
-        UsageCount++;
+        if (SunlightPercent < 0) throw new ArgumentException("Sunlight cannot be negative.");
+        double actualOutput = BaseOutput * SunlightPercent / 100;
+        Console.WriteLine($"PowerSource ID: {SourceID}");
+        Console.WriteLine("Type: SolarPanel");
+        Console.WriteLine($"Base Output: {BaseOutput}");
+        Console.WriteLine($"Sunlight Modifier: {SunlightPercent}%");
+        Console.WriteLine($"Calculated Output: {actualOutput}");
     }
 }
 
-// Sub-Class: ChemicalFilter
-class ChemicalFilter : WaterFilter
+// Sub-Class: WindTurbine
+class WindTurbine : PowerSource
 {
-    public double ChemicalLevel { get; set; }
+    public double WindSpeed { get; set; }
 
-    public ChemicalFilter(string id, int usage, double chemical) : base(id, usage)
+    public WindTurbine(string id, double output, double wind)
     {
-        if (chemical < 0) throw new ArgumentException("Chemical level cannot be negative.");
-        ChemicalLevel = chemical;
+        SourceID = id;
+        BaseOutput = output;
+        WindSpeed = wind;
     }
 
-    public override void ProcessWater()
+    public override void GenerateReport()
     {
-        Console.WriteLine($"Chemical Filter {FilterID} processed water at chemical level {ChemicalLevel}.");
-        UsageCount++;
+        if (WindSpeed < 0) throw new ArgumentException("Wind speed cannot be negative.");
+        double actualOutput = BaseOutput * WindSpeed / 100;
+        Console.WriteLine($"PowerSource ID: {SourceID}");
+        Console.WriteLine("Type: WindTurbine");
+        Console.WriteLine($"Base Output: {BaseOutput}");
+        Console.WriteLine($"Wind Speed Modifier: {WindSpeed}%");
+        Console.WriteLine($"Calculated Output: {actualOutput}");
     }
 }
 
@@ -86,18 +83,15 @@ class Program
     {
         try
         {
-            CarbonFilter carbon = new CarbonFilter("CF01", 0, 15);
-            ChemicalFilter chemical = new ChemicalFilter("CH01", 0, 7.5);
+            SolarPanel solar = new SolarPanel("SP01", 500, 80);
+            WindTurbine wind = new WindTurbine("WT01", 600, 70);
 
-            carbon.ProcessWater();
-            chemical.ProcessWater();
-
-            Console.WriteLine($"Carbon Filter Efficiency: {carbon.CalculateEfficiency(100):F2}");
-            Console.WriteLine($"Chemical Filter Efficiency: {chemical.CalculateEfficiency(80):F2}");
+            solar.GenerateReport();
+            wind.GenerateReport();
         }
         catch (ArgumentException ex)
         {
-            Console.WriteLine($"Input Error: {ex.Message}");
+            Console.WriteLine($"Error: {ex.Message}");
         }
         catch (Exception ex)
         {
