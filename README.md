@@ -1,84 +1,111 @@
-
-
 using System;
 
+// Base Class
+abstract class WaterFilter
+{
+    private string filterID;
+    private int usageCount;
+
+    public string FilterID
+    {
+        get { return filterID; }
+        set { filterID = value; }
+    }
+
+    public int UsageCount
+    {
+        get { return usageCount; }
+        set
+        {
+            if (value < 0) throw new ArgumentException("Usage count cannot be negative.");
+            usageCount = value;
+        }
+    }
+
+    public WaterFilter(string id, int usage)
+    {
+        FilterID = id;
+        UsageCount = usage;
+    }
+
+    public abstract void ProcessWater();
+
+    public double CalculateEfficiency(double waterProcessed)
+    {
+        try
+        {
+            return waterProcessed / UsageCount; // may throw DivideByZeroException
+        }
+        catch (DivideByZeroException)
+        {
+            Console.WriteLine("Cannot calculate efficiency: no water processed yet.");
+            return 0;
+        }
+    }
+}
+
+// Sub-Class: CarbonFilter
+class CarbonFilter : WaterFilter
+{
+    public int DebrisRemoved { get; set; }
+
+    public CarbonFilter(string id, int usage, int debris) : base(id, usage)
+    {
+        DebrisRemoved = debris;
+    }
+
+    public override void ProcessWater()
+    {
+        Console.WriteLine($"Carbon Filter {FilterID} removed {DebrisRemoved} units of debris.");
+        UsageCount++;
+    }
+}
+
+// Sub-Class: ChemicalFilter
+class ChemicalFilter : WaterFilter
+{
+    public double ChemicalLevel { get; set; }
+
+    public ChemicalFilter(string id, int usage, double chemical) : base(id, usage)
+    {
+        if (chemical < 0) throw new ArgumentException("Chemical level cannot be negative.");
+        ChemicalLevel = chemical;
+    }
+
+    public override void ProcessWater()
+    {
+        Console.WriteLine($"Chemical Filter {FilterID} processed water at chemical level {ChemicalLevel}.");
+        UsageCount++;
+    }
+}
+
+// Main Program
 class Program
 {
     static void Main()
     {
-        // -----------------------------
-        // Task 1: Driver Profile & Distance Validation
-        // -----------------------------
-        Console.Write("Enter Driver's Full Name: ");
-        string driverName = Console.ReadLine(); // string type for names
-
-        Console.Write("Enter Weekly Fuel Budget: ");
-        decimal weeklyBudget = decimal.Parse(Console.ReadLine()); // decimal for currency precision
-
-        // Validate distance input using while loop
-        double totalDistance;
-        do
+        try
         {
-            Console.Write("Enter Total Distance Traveled this week (1.0 - 5000.0 km): ");
-            totalDistance = double.Parse(Console.ReadLine()); // double for distance
-            if (totalDistance < 1.0 || totalDistance > 5000.0)
-            {
-                Console.WriteLine("Error: Distance must be between 1.0 and 5000.0 km.");
-            }
-        } while (totalDistance < 1.0 || totalDistance > 5000.0);
+            CarbonFilter carbon = new CarbonFilter("CF01", 0, 15);
+            ChemicalFilter chemical = new ChemicalFilter("CH01", 0, 7.5);
 
-        // -----------------------------
-        // Task 2: Fuel Expense Tracking
-        // -----------------------------
-        decimal[] fuelExpenses = new decimal[5]; // 1D array for 5 days
-        decimal totalFuelSpent = 0;
+            carbon.ProcessWater();
+            chemical.ProcessWater();
 
-        for (int i = 0; i < 5; i++)
-        {
-            Console.Write($"Enter fuel expense for Day {i + 1}: "); // (i+1) for readable day numbers
-            fuelExpenses[i] = decimal.Parse(Console.ReadLine());
-            totalFuelSpent += fuelExpenses[i];
+            Console.WriteLine($"Carbon Filter Efficiency: {carbon.CalculateEfficiency(100):F2}");
+            Console.WriteLine($"Chemical Filter Efficiency: {chemical.CalculateEfficiency(80):F2}");
         }
-
-        decimal avgDailyFuel = totalFuelSpent / 5;
-
-        // -----------------------------
-        // Task 3: Performance Analysis
-        // -----------------------------
-        double efficiency = totalDistance / (double)totalFuelSpent; // convert decimal to double for calculation
-        string efficiencyRating;
-
-        if (efficiency > 15)
+        catch (ArgumentException ex)
         {
-            efficiencyRating = "High Efficiency";
+            Console.WriteLine($"Input Error: {ex.Message}");
         }
-        else if (efficiency >= 10)
+        catch (Exception ex)
         {
-            efficiencyRating = "Standard Efficiency";
+            Console.WriteLine($"Unexpected Error: {ex.Message}");
         }
-        else
+        finally
         {
-            efficiencyRating = "Low Efficiency / Maintenance Required";
+            Console.WriteLine("System Shutdown");
         }
-
-        // Budget Status
-        bool underBudget = totalFuelSpent <= weeklyBudget;
-
-        // -----------------------------
-        // Task 4: Audit Report
-        // -----------------------------
-        Console.WriteLine("\n--- AUDIT REPORT ---");
-        Console.WriteLine($"Driver Name: {driverName}");
-        Console.WriteLine("Fuel Expenses (5 days):");
-
-        for (int i = 0; i < 5; i++)
-        {
-            Console.WriteLine($" Day {i + 1}: {fuelExpenses[i]:C}"); // :C formats as currency
-        }
-
-        Console.WriteLine($"Total Fuel Spent: {totalFuelSpent:C}");
-        Console.WriteLine($"Average Daily Fuel Expense: {avgDailyFuel:C}");
-        Console.WriteLine($"Efficiency Rating: {efficiencyRating}");
-        Console.WriteLine($"Stayed Under Budget: {underBudget}");
     }
 }
